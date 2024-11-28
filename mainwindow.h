@@ -4,6 +4,7 @@
 #include "modelreaction.h"
 
 #include <QMainWindow>
+#include <QTableWidgetItem>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -20,6 +21,10 @@ public:
     ~MainWindow();
 
 private slots:
+    void on_countRowSpinBox_valueChanged(int arg1);
+
+
+    void on_graphicsPushButton_clicked();
 
 private:
     Ui::MainWindow *ui;
