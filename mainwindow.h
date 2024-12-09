@@ -22,9 +22,14 @@ public:
 
 private slots:
     void on_countRowSpinBox_valueChanged(int arg1);
-
-
     void on_graphicsPushButton_clicked();
+    void drawReactionGraphs(
+        const QVector<double>& times,
+        const QVector<double>& concA,
+        const QVector<double>& concB,
+        const QVector<double>& concC,
+        const QVector<double>& concD
+    );
 
 private:
     Ui::MainWindow *ui;
