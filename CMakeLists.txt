@@ -27,6 +27,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         modelreaction.h modelreaction.cpp
         exceptions.h
         exceptions.cpp
+        reactionparametersdialog.h reactionparametersdialog.cpp reactionparametersdialog.ui
 
     )
 # Define target properties for Android with Qt 6 as:

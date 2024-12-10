@@ -2,6 +2,7 @@
 #include "./ui_mainwindow.h"
 #include "modelreaction.h"
 #include "exceptions.h"
+#include "reactionparametersdialog.h"
 
 #include <QMessageBox>
 #include <qstandarditemmodel.h>
@@ -9,6 +10,7 @@
 #include <QtCharts/QChart>
 #include <QtCharts/QChartView>
 #include <QGraphicsScene>
+#include <QValueAxis>
 
 
 MainWindow::MainWindow(ModelReaction *model, QWidget *parent)
@@ -125,6 +127,15 @@ void MainWindow::on_graphicsPushButton_clicked()
 
         drawReactionGraphs(times, concA, concB, concC, concD);
 
+        ReactionParametersDialog* paramsDialog = new ReactionParametersDialog(
+            MainWindow::model->getRateConstant(),
+            MainWindow::model->getReactionOrder(),
+            MainWindow::model->getDispersion(),
+            MainWindow::model->getCorrelation(),
+            this
+            );
+        paramsDialog->exec(); // Ожидаем закрытия диалога
+
     } catch (const ValidationError& e) {
         QMessageBox::warning(this, "Ошибка", QString::fromStdString(e.what()));
     } catch (const ModelException& e) {
@@ -154,15 +165,15 @@ void MainWindow::drawReactionGraphs(const QVector<double>& times,
     }
 
     // Устанавливаем имена и цвета для серий
-    seriesA->setName("Concentration A");
-    seriesB->setName("Concentration B");
-    seriesC->setName("Concentration C");
-    seriesD->setName("Concentration D");
+    seriesA->setName("Концентрация A");
+    seriesB->setName("Концентрация B");
+    seriesC->setName("Концентрация C");
+    seriesD->setName("Концентрация D");
 
-    seriesA->setColor(Qt::blue);
+    seriesA->setColor(Qt::red);
     seriesB->setColor(Qt::green);
-    seriesC->setColor(Qt::red);
-    seriesD->setColor(Qt::yellow);
+    seriesC->setColor(Qt::blue);
+    seriesD->setColor(Qt::magenta);
 
     // Создаём QChart и добавляем в него серии
     QChart* chart = new QChart();
@@ -170,20 +181,48 @@ void MainWindow::drawReactionGraphs(const QVector<double>& times,
     chart->addSeries(seriesB);
     chart->addSeries(seriesC);
     chart->addSeries(seriesD);
-    chart->setTitle("Reaction Concentration Over Time");
-    chart->createDefaultAxes(); // Автоматическое создание осей
+    chart->setTitle("Экспериментальные точки и апроксимационная кривая");
+
+    // Создаём оси X и Y
+    QValueAxis* axisX = new QValueAxis();
+    axisX->setTitleText("Время (t)");
+    axisX->setLabelFormat("%.2f");   // Формат чисел на оси X
+
+
+    QValueAxis* axisY = new QValueAxis();
+    axisY->setTitleText("Концентрация (С)");
+    axisY->setLabelFormat("%.2f");   // Формат чисел на оси Y
+
+    // Добавляем оси к графику
+    chart->addAxis(axisX, Qt::AlignBottom);
+    chart->addAxis(axisY, Qt::AlignLeft);
+
+    // Привязываем серии данных к осям
+    seriesA->attachAxis(axisX);
+    seriesA->attachAxis(axisY);
+
+    seriesB->attachAxis(axisX);
+    seriesB->attachAxis(axisY);
+
+    seriesC->attachAxis(axisX);
+    seriesC->attachAxis(axisY);
+
+    seriesD->attachAxis(axisX);
+    seriesD->attachAxis(axisY);
+
 
     // Создаём QChartView для отображения QChart
     QChartView* chartView = new QChartView(chart);
     chartView->setRenderHint(QPainter::Antialiasing); // Улучшение качества отрисовки
 
-    chartView->setMinimumSize(ui->graphicsView->size());
-    chartView->setMaximumSize(ui->graphicsView->size());
+    chartView->setFixedSize(ui->graphicsView->viewport()->size());
 
-    // Создаём сцену и добавляем в неё QChartView
     QGraphicsScene* scene = new QGraphicsScene(this);
     scene->addWidget(chartView);
+    scene->setSceneRect(0, 0, ui->graphicsView->width(), ui->graphicsView->height());
 
-    // Устанавливаем сцену для graphicsView
     ui->graphicsView->setScene(scene);
+    ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
 }

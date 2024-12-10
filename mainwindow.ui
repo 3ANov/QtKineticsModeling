@@ -9,12 +9,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>820</width>
+    <width>879</width>
     <height>560</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Оценка кинетических констант методом рег. анализа</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QGroupBox" name="reactionSpeedGroupBox">
@@ -367,35 +367,9 @@
      <rect>
       <x>240</x>
       <y>30</y>
-      <width>551</width>
+      <width>611</width>
       <height>461</height>
      </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_5">
-    <property name="geometry">
-     <rect>
-      <x>340</x>
-      <y>10</y>
-      <width>341</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Экспериментальные точки и апроксимационная кривая</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_6">
-    <property name="geometry">
-     <rect>
-      <x>460</x>
-      <y>500</y>
-      <width>54</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Время (t)</string>
     </property>
    </widget>
   </widget>
@@ -404,7 +378,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>820</width>
+     <width>879</width>
      <height>22</height>
     </rect>
    </property>
