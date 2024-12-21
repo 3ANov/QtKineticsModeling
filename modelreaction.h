@@ -11,6 +11,7 @@ private:
     double concentB;
     double concentC;
     double concentD;
+    QVector<double> inputConcentrationsA;
     QVector<double> concentrationsA;
     QVector<double> concentrationsB;
     QVector<double> concentrationsC;
@@ -35,13 +36,13 @@ public:
         )
     {
         times = timesData;
-        concentrationsA = concentrationsData;
+        inputConcentrationsA = concentrationsData;
         concentB = initialConcentB;
         concentC = initialConcentC;
         concentD = initialConcentD;
         recordCount = timesData.size();
 
-
+        concentrationsA.clear();
         concentrationsB.clear();
         concentrationsC.clear();
         concentrationsD.clear();

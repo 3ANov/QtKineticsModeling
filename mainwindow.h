@@ -25,6 +25,7 @@ private slots:
     void on_graphicsPushButton_clicked();
     void drawReactionGraphs(
         const QVector<double>& times,
+        const QVector<double> inputConcentrationsA,
         const QVector<double>& concA,
         const QVector<double>& concB,
         const QVector<double>& concC,

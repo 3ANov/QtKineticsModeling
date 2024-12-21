@@ -10,6 +10,7 @@
 #include <QtCharts/QChart>
 #include <QtCharts/QChartView>
 #include <QGraphicsScene>
+#include <QScatterSeries>
 #include <QValueAxis>
 
 
@@ -18,6 +19,21 @@ MainWindow::MainWindow(ModelReaction *model, QWidget *parent)
 {
     ui->setupUi(this);
     setWindowFlags(Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
+
+    ui->conBLineEdit->setText("0.0");  // Начальная концентрация B
+    ui->conCLineEdit->setText("0.0");  // Начальная концентрация C
+    ui->conDLineEdit->setText("0.0");  // Начальная концентрация D
+    ui->countRowSpinBox->setValue(11);
+
+    // Заполняем таблицу начальными значениями для концентрации A и времени
+    QVector<double> testConcentrations = {1.0000, 0.8100, 0.6561, 0.5314, 0.4313, 0.3497, 0.2835, 0.2294, 0.1853, 0.1497, 0.1216};
+    QVector<double> testTimes = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+
+    for (int i = 0; i < 11; ++i) {
+        ui->tableWidget->setItem(i, 0, new QTableWidgetItem(QString::number(testConcentrations[i])));  // Концентрация A
+        ui->tableWidget->setItem(i, 1, new QTableWidgetItem(QString::number(testTimes[i])));  // Время
+    }
+
     connect(ui->exitPushButton, &QPushButton::clicked, QApplication::instance(), &QApplication::quit);
 }
 
@@ -125,7 +141,7 @@ void MainWindow::on_graphicsPushButton_clicked()
         QVector<double> concC = MainWindow::model -> getConcentrationsC();
         QVector<double> concD =  MainWindow::model -> getConcentrationsD();
 
-        drawReactionGraphs(times, concA, concB, concC, concD);
+        drawReactionGraphs(times, concentrations, concA, concB, concC, concD);
 
         ReactionParametersDialog* paramsDialog = new ReactionParametersDialog(
             MainWindow::model->getRateConstant(),
@@ -145,11 +161,15 @@ void MainWindow::on_graphicsPushButton_clicked()
 
 
 void MainWindow::drawReactionGraphs(const QVector<double>& times,
+                                    const QVector<double> inputConcentrationsA,
                                     const QVector<double>& concA,
                                     const QVector<double>& concB,
                                     const QVector<double>& concC,
                                     const QVector<double>& concD)
 {
+     // Создаём серию для эксперементальных данных
+    QScatterSeries* seriesExp = new QScatterSeries();
+
     // Создаём серии для концентраций A, B, C и D
     QLineSeries* seriesA = new QLineSeries();
     QLineSeries* seriesB = new QLineSeries();
@@ -158,6 +178,7 @@ void MainWindow::drawReactionGraphs(const QVector<double>& times,
 
     // Заполняем серии данными
     for (int i = 0; i < times.size(); ++i) {
+        seriesExp->append(times[i], inputConcentrationsA[i]);
         seriesA->append(times[i], concA[i]);
         seriesB->append(times[i], concB[i]);
         seriesC->append(times[i], concC[i]);
@@ -165,39 +186,73 @@ void MainWindow::drawReactionGraphs(const QVector<double>& times,
     }
 
     // Устанавливаем имена и цвета для серий
+    seriesExp->setName("Экспериментальные точки");
     seriesA->setName("Концентрация A");
     seriesB->setName("Концентрация B");
     seriesC->setName("Концентрация C");
     seriesD->setName("Концентрация D");
 
+    seriesExp->setColor(Qt::darkBlue);
     seriesA->setColor(Qt::red);
     seriesB->setColor(Qt::green);
     seriesC->setColor(Qt::blue);
     seriesD->setColor(Qt::magenta);
 
+    seriesExp->setMarkerSize(8);
+
     // Создаём QChart и добавляем в него серии
     QChart* chart = new QChart();
+    chart->addSeries(seriesExp);
     chart->addSeries(seriesA);
     chart->addSeries(seriesB);
     chart->addSeries(seriesC);
     chart->addSeries(seriesD);
     chart->setTitle("Экспериментальные точки и апроксимационная кривая");
 
+    // Уменьшаем размер шрифта в легенде и изменяем форму маркеров
+    chart->legend()->setFont(QFont("Arial", 8));
+    chart->legend()->setMarkerShape(QLegend::MarkerShapeRectangle);
+
     // Создаём оси X и Y
     QValueAxis* axisX = new QValueAxis();
     axisX->setTitleText("Время (t)");
     axisX->setLabelFormat("%.2f");   // Формат чисел на оси X
+    axisX->setRange(times.first(), times.last());  // Диапазон оси X от первого до последнего времени
 
 
     QValueAxis* axisY = new QValueAxis();
     axisY->setTitleText("Концентрация (С)");
     axisY->setLabelFormat("%.2f");   // Формат чисел на оси Y
 
+
+    // Найдём минимальное и максимальное значение концентрации
+    double minConc = std::min({
+        *std::min_element(concA.begin(), concA.end()),
+        *std::min_element(concB.begin(), concB.end()),
+        *std::min_element(concC.begin(), concC.end()),
+        *std::min_element(concD.begin(), concD.end())
+    });
+
+    double maxConc = std::max({
+        *std::max_element(concA.begin(), concA.end()),
+        *std::max_element(concB.begin(), concB.end()),
+        *std::max_element(concC.begin(), concC.end()),
+        *std::max_element(concD.begin(), concD.end())
+    });
+
+    // Устанавливаем диапазон для оси Y
+    axisY->setRange(minConc, maxConc);  // Диапазон от минимального до максимального значения
+
+
     // Добавляем оси к графику
     chart->addAxis(axisX, Qt::AlignBottom);
     chart->addAxis(axisY, Qt::AlignLeft);
 
+
     // Привязываем серии данных к осям
+    seriesExp->attachAxis(axisX);
+    seriesExp->attachAxis(axisY);
+
     seriesA->attachAxis(axisX);
     seriesA->attachAxis(axisY);
 
