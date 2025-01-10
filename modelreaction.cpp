@@ -25,10 +25,6 @@ void ModelReaction::calculateReactionParameters() {
     double s1 = times.size() - 1;
     double s2 = 0.0, s3 = 0.0, s4 = 0.0, s5 = 0.0, s6 = 0.0;
 
-
-    // Переменные для подсчёта изменений
-    int reg_up = 0, reg_down = 0;
-
     // Расчёт значений для логарифмического анализа
     for (int i = 0; i < times.size() - 1; ++i) {
         double t = times[i + 1] - times[i];
@@ -36,12 +32,6 @@ void ModelReaction::calculateReactionParameters() {
 
         if (deltaCa <= 0) {
             throw ModelException("Ошибка в данных: разность концентраций A должна быть положительной.");
-        }
-
-        if (inputConcentrationsA[i] > inputConcentrationsA[i + 1]) {
-            reg_down++;
-        } else {
-            reg_up++;
         }
 
         // Вычисление логарифмических значений
@@ -82,13 +72,8 @@ void ModelReaction::calculateReactionParameters() {
         cb += rateConstant * pow(ca, reactionOrder) * t;
         cc += rateConstant * pow(ca, reactionOrder) * t;
         cd += rateConstant * pow(ca, reactionOrder) * t;
+        ca -= rateConstant * pow(ca, reactionOrder) * t;
 
-        // Рассчитываем новое значение концентрации A
-        if (reg_down > reg_up) {
-            ca -= rateConstant * pow(ca, reactionOrder) * t;
-        } else {
-            ca += rateConstant * pow(ca, reactionOrder) * t;
-        }
 
         if (ca < 0) {
             throw ModelException("Модель невозможно описать линейной регрессией.");
